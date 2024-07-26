@@ -2,6 +2,9 @@ import time
 import pygame
 import random
 import math
+import pandas as pd
+import tkinter as tk
+from tkinter import filedialog
 pygame.init()
 
 class DrawInformation:
@@ -81,8 +84,8 @@ def draw(draw_info, algo_name, ascending, buttons,elapsed_time):
     title = draw_info.LARGE_FONT.render(f"{algo_name} - {'Ascending' if ascending else 'Descending'}", 1, draw_info.BLACK)
     draw_info.window.blit(title, (draw_info.width/2 - title.get_width()/2, 5))
 
-    time_text = draw_info.FONT.render(f"Time: {elapsed_time:.4f} seconds", 1, DrawInformation.BLACK)
-    draw_info.window.blit(time_text, (120, 50))
+    time_text = draw_info.FONT.render(f"Time: {elapsed_time:.3f} Sec", 1, DrawInformation.BLACK)
+    draw_info.window.blit(time_text, (0 , 125))
 
 
     for button in buttons:
@@ -121,6 +124,28 @@ def generate_starting_list(n, min_val, max_val):
     return lst
 
 
+def read_csv(file_path):
+    try:
+        data = pd.read_csv(file_path)
+        if data.shape[1] != 1:
+            raise ValueError("CSV file should contain exactly one column")
+        return data.iloc[:, 0].tolist()
+    except Exception as e:
+        print(f"Error reading CSV file: {e}")
+        return []
+
+def select_csv_file():
+    root = tk.Tk()
+    root.withdraw()  # Hide the root window
+    file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
+    return file_path
+
+
+def store_csv_file(lst):
+    sorted_list = lst
+    print (sorted_list)
+    
+
 def timing_sort(draw_info, sort_func, ascending=True):
     start_time = time.time()
     for _ in sort_func(draw_info, ascending):
@@ -128,6 +153,7 @@ def timing_sort(draw_info, sort_func, ascending=True):
     end_time = time.time()
     elapsed_time = end_time - start_time
     return elapsed_time
+
 
 
 def bubble_sort(draw_info, ascending=True):
@@ -209,10 +235,12 @@ def quick_sort(draw_info, ascending=True):
 
         lst[end], lst[pivot_index] = lst[pivot_index], lst[end]
         draw_list(draw_info, {end: draw_info.GREEN, pivot_index: draw_info.RED}, True)
+        
+
         yield True
 
         return end
-
+     
     def quick_sort_recursive(start, end):
         if start < end:
             p = yield from partition(start, end)
@@ -304,6 +332,7 @@ def shell_sort(draw_info, ascending=True):
                 yield True
             lst[j] = temp
             draw_list(draw_info, {j: draw_info.GREEN, i: draw_info.RED}, True)
+            
             yield True
         gap //= 2
 
@@ -331,20 +360,22 @@ def main():
     sorting_algo_name = "Bubble Sort"
     sorting_algorithm_generator = None
    
-
+    # print ("Before sorting list="+draw_info.lst)
 
     buttons = [
-        Button(0, 0, 100, 28, "Reset", DrawInformation.RED, DrawInformation.FONT,DrawInformation.WHITE),
-        Button(700, 0, 100, 28, "Start", DrawInformation.GREEN, DrawInformation.FONT),
-        Button(0, 40, 110, 50, "Ascending", DrawInformation.GRAY, DrawInformation.FONT),
-        Button(0, 95, 110, 50, "Descending", DrawInformation.GRAY, DrawInformation.FONT),
+        Button(775, 0, 100, 28, "Reset", DrawInformation.RED, DrawInformation.FONT,DrawInformation.WHITE),
+        Button(900, 0, 100, 28, "Start", DrawInformation.GREEN, DrawInformation.FONT),
+        Button(0, 10, 110, 50, "Ascending", DrawInformation.GRAY, DrawInformation.FONT),
+        Button(0, 70, 110, 50, "Descending", DrawInformation.GRAY, DrawInformation.FONT),
         Button(150, 78, 100, 50, "Insertion", DrawInformation.BUTTN, DrawInformation.FONT),
         Button(270, 78, 100, 50, "Bubble", DrawInformation.BUTTN, DrawInformation.FONT),
         Button(390, 78, 100, 50, "Selection", DrawInformation.BUTTN, DrawInformation.FONT),
         Button(870, 78, 100, 50, "Quick", DrawInformation.BUTTN, DrawInformation.FONT),
         Button(630, 78, 100, 50, "Merge", DrawInformation.BUTTN, DrawInformation.FONT, DrawInformation.WHITE),
         Button(750, 78, 100, 50, "Heap", DrawInformation.BUTTN, DrawInformation.FONT),
-        Button(510, 78,100, 50, "Shell", DrawInformation.BUTTN, DrawInformation.FONT),        
+        Button(510, 78,100, 50, "Shell", DrawInformation.BUTTN, DrawInformation.FONT), 
+        Button(900, 40,100, 28, "GetList", DrawInformation.BUTTN, DrawInformation.FONT),         
+        Button(775, 40, 100, 28, "Load CSV", DrawInformation.BUTTN, DrawInformation.FONT)  # New CSV button
         # Add more buttons here if needed
     ]
 
@@ -355,6 +386,7 @@ def main():
                 next(sorting_algorithm_generator)
                 elapsed_time = time.time() - start_time  # Update elapsed time
             except StopIteration:
+                
                 sorting = False
         else:
             draw(draw_info, sorting_algo_name, ascending, buttons,elapsed_time)
@@ -380,6 +412,7 @@ def main():
                             ascending = True
                         elif button.text == "Descending" and not sorting:
                             ascending = False
+                            
                         elif button.text == "Insertion" and not sorting:
                             sorting_algorithm = insertion_sort
                             sorting_algo_name = "Insertion Sort"
@@ -401,8 +434,16 @@ def main():
                         elif button.text == "Shell" and not sorting:
                             sorting_algorithm = shell_sort
                             sorting_algo_name = "Shell Sort"
+                        elif button.text == "Load CSV":
+                            file_path = select_csv_file()
+                            if file_path:
+                                lst = read_csv(file_path)
+                                draw_info.set_list(lst)
+                                elapsed_time = 0  # Reset elapsed time
+                        elif button.text == "GetList":
+                            store_csv_file(lst)
 
-
+        
     pygame.quit()
 
 if __name__ == "__main__":
