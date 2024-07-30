@@ -9,10 +9,10 @@ from tkinter import filedialog
 pygame.init()
 
 class DrawInformation:
-    BLACK = 0, 0, 0
-    WHITE = 255, 255, 255
-    GREEN = 0, 255, 0
-    RED= 255, 0, 0
+    BLACK = 0, 0, 0 # black
+    WHITE = 255, 255, 255 # white
+    GREEN = 0, 255, 0 # green
+    RED= 255, 0, 0        
     GRAY = 	150,182,182
     OFFWHITE = 206,194,179
     SKY = 204,204,255
